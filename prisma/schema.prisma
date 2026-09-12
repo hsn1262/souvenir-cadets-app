@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
+// enough when changing adapters.
+// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
+//
+// Vercel's serverless functions have an ephemeral, per-invocation filesystem,
+// so the template's default file-based SQLite store doesn't persist between
+// requests there — swapped to Postgres for deployment. Run locally against
+// the same Postgres URL (docker, Neon, Supabase, or Vercel's own Postgres
+// marketplace addon all work) rather than switching back to SQLite, so
+// local dev and production behave the same way.
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id                  String    @id
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String
+  userId              BigInt?
+  firstName           String?
+  lastName            String?
+  email               String?
+  accountOwner        Boolean   @default(false)
+  locale              String?
+  collaborator        Boolean?  @default(false)
+  emailVerified       Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+// Replaces the hardcoded ADMIN_PIN from Code.gs. Shopify's own staff
+// permissions gate access to the app as a whole, not to individual buttons
+// inside it — so destructive actions (reset stock, delete event, reset
+// sales logs) check this table instead, keyed to the acting staff member's
+// real Shopify identity from the session token, not a shared 4-digit code.
+model StaffRole {
+  id               String   @id @default(cuid())
+  shop             String
+  staffMemberGid   String // e.g. gid://shopify/StaffMember/123456789
+  staffName        String
+  staffEmail       String?
+  role             String   @default("STAFF") // "MANAGER" | "STAFF"
+  updatedAt        DateTime @updatedAt
+  createdAt        DateTime @default(now())
+
+  @@unique([shop, staffMemberGid])
+}
+
+// One row per cost-basis snapshot at the moment a Draft Order is completed,
+// so a later change to a product's unit cost never rewrites the P&L of a
+// sale that already happened. Replaces EventSalesLog / OnlineSalesLog.
+model SaleCostSnapshot {
+  id               String   @id @default(cuid())
+  shop             String
+  orderGid         String
+  lineItemGid      String
+  inventoryItemGid String
+  unitCost         Float
+  quantity         Int
+  locationGid      String // Central location gid, or the event's Location gid
+  createdAt        DateTime @default(now())
+
+  @@unique([orderGid, lineItemGid])
+  @@index([shop, locationGid])
+}
