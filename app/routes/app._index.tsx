@@ -24,7 +24,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 const PHASES = [
   { name: "Central Inventory", status: "Live", tone: "success" as const, desc: "Products, variants, spec fields, images, stock." },
-  { name: "Events (Locations, Allocate, Close)", status: "Next up", tone: "info" as const, desc: "Each event becomes a Shopify Location." },
+  { name: "Events (Locations, Allocate, Close)", status: "Live", tone: "success" as const, desc: "Each event becomes a Shopify Location." },
   { name: "Token → Draft Order", status: "Planned", tone: "attention" as const, desc: "Held quotes as Draft Orders." },
   { name: "Invoice → Order", status: "Planned", tone: "attention" as const, desc: "Completion decrements stock exactly once." },
   { name: "Online Sale", status: "Planned", tone: "attention" as const, desc: "Same invoice logic against Central." },

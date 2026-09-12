@@ -24,7 +24,7 @@ export async function findLocationByName(admin: AdminApiContext, name: string) {
 // Best-effort default so locationAdd's required address doesn't block
 // setup — merchants can correct the real address afterwards from Shopify
 // Admin's own Settings > Locations screen, same as any other location.
-async function shopDefaultCountry(admin: AdminApiContext): Promise<string> {
+export async function shopDefaultCountry(admin: AdminApiContext): Promise<string> {
   const response = await admin.graphql(
     `#graphql
       query ShopCountry {
